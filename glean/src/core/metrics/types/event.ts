@@ -49,8 +49,6 @@ export class InternalEventMetricType<
       return;
     }
 
-    const ts = Date.now();
-
     try {
       // Create metric here, in order to run the validations and throw in case input in invalid.
       const metric = new RecordedEvent({
@@ -61,8 +59,9 @@ export class InternalEventMetricType<
       });
 
       // Truncate the extra keys, if needed.
-      const truncatedExtra: ExtraMap = {};
+      let truncatedExtra: ExtraMap | undefined = undefined;
       if (extra && this.allowedExtraKeys) {
+        truncatedExtra = {};
         for (const [name, value] of Object.entries(extra)) {
           if (this.allowedExtraKeys.includes(name)) {
             if (isString(value)) {
@@ -85,8 +84,6 @@ export class InternalEventMetricType<
         }
       }
 
-      // Glean wall-clock timestamp added to all events
-      truncatedExtra["glean_timestamp"] = ts.toString();
       metric.set({
         ...metric.get(),
         extra: truncatedExtra
@@ -114,19 +111,7 @@ export class InternalEventMetricType<
    */
   testGetValue(ping: string = this.sendInPings[0]): Event[] | undefined {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      const events = Context.eventsDatabase.getEvents(ping, this);
-      if (!events) return events;
-
-      events.forEach((ev) => {
-        if (ev.extra) {
-          delete ev.extra["glean_timestamp"];
-          if (Object.keys(ev.extra).length == 0) {
-            ev.extra = undefined;
-          }
-        }
-      });
-
-      return events;
+      return Context.eventsDatabase.getEvents(ping, this);
     }
   }
 }

@@ -10,9 +10,7 @@ import * as metrics from "./generated/sample.js";
 
 Glean.setLogPings(true);
 Glean.setDebugViewTag("glean-from-website");
-Glean.initialize("glean-sample-website", true, {
-  enableAutoElementClickEvents: true
-});
+Glean.initialize("glean-sample-website", true);
 
 metrics.pageLoaded.set();
 
